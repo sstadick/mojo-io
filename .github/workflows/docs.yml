@@ -1,0 +1,36 @@
+name: Tests and documentation
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-15]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: sstadick/mojoverse
+          ref: 450bc20787ef10748afb538419b0c03ec8732e37
+          path: .ci/mojoverse
+      - uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: v0.80.0
+          cache: true
+      - run: pixi run --locked t
+      - run: pixi run --locked consumer
+      - run: pixi run --locked docs
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          MOJOVERSE: ${{ github.workspace }}/.ci/mojoverse
+      - uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          name: docs-site
+          path: target/docs
+          if-no-files-found: error

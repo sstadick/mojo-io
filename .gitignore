@@ -1,0 +1,5 @@
+.pixi/
+target/
+__pycache__/
+*.mojoc
+*.conda
